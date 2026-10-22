@@ -44,6 +44,15 @@ from utils import extract_text
 
 load_dotenv()
 
+# Sync Streamlit Cloud secrets into os.environ for all child modules
+try:
+    if hasattr(st, "secrets"):
+        for k, v in st.secrets.items():
+            if isinstance(v, str):
+                os.environ[k] = v
+except Exception:
+    pass
+
 st.set_page_config(
     page_title="LexieLingua AI | Intelligent Copilot",
     page_icon="⚡",
@@ -53,8 +62,17 @@ st.set_page_config(
 
 _DB_EXECUTOR = ThreadPoolExecutor(max_workers=4)
 
-SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY") or os.getenv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY")
+def _get_secret(key: str, default: str = "") -> str:
+    val = os.getenv(key, "")
+    if not val:
+        try:
+            val = st.secrets.get(key, default)
+        except Exception:
+            val = default
+    return str(val).strip()
+
+SUPABASE_URL = _get_secret("SUPABASE_URL") or _get_secret("NEXT_PUBLIC_SUPABASE_URL")
+SUPABASE_KEY = _get_secret("SUPABASE_KEY") or _get_secret("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY")
 supabase_client = None
 
 try:

@@ -88,13 +88,27 @@ WHISPER_MODELS = {
 
 _GROQ_CLIENT = None
 _OPENAI_CLIENT = None
+_CURRENT_GROQ_KEY = None
+_CURRENT_OPENAI_KEY = None
 
 def get_groq_api_key() -> str:
     key = os.getenv("GROQ_API_KEY", "").strip()
+    if not key:
+        try:
+            import streamlit as st
+            key = str(st.secrets.get("GROQ_API_KEY", "")).strip()
+        except Exception:
+            key = ""
     return key
 
 def get_openai_api_key() -> str:
     key = os.getenv("OPENAI_API_KEY", "").strip()
+    if not key:
+        try:
+            import streamlit as st
+            key = str(st.secrets.get("OPENAI_API_KEY", "")).strip()
+        except Exception:
+            key = ""
     return key
 
 def is_groq_available() -> bool:
@@ -104,14 +118,15 @@ def is_openai_available() -> bool:
     return bool(get_openai_api_key())
 
 def get_groq_client():
-    global _GROQ_CLIENT
+    global _GROQ_CLIENT, _CURRENT_GROQ_KEY
     key = get_groq_api_key()
     if not key:
         return None
-    if _GROQ_CLIENT is None:
+    if _GROQ_CLIENT is None or _CURRENT_GROQ_KEY != key:
         try:
             from groq import Groq
             _GROQ_CLIENT = Groq(api_key=key)
+            _CURRENT_GROQ_KEY = key
         except Exception as exc:
             print(f"[Groq Init Error]: {exc}")
             return None

@@ -8,7 +8,16 @@ load_dotenv()
 def get_supabase_credentials() -> Tuple[str, str]:
     url = os.getenv("NEXT_PUBLIC_SUPABASE_URL") or os.getenv("SUPABASE_URL") or ""
     key = os.getenv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY") or os.getenv("SUPABASE_KEY") or ""
-    return url.strip(), key.strip()
+    if not url or not key:
+        try:
+            import streamlit as st
+            if not url:
+                url = st.secrets.get("NEXT_PUBLIC_SUPABASE_URL") or st.secrets.get("SUPABASE_URL") or ""
+            if not key:
+                key = st.secrets.get("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY") or st.secrets.get("SUPABASE_KEY") or ""
+        except Exception:
+            pass
+    return str(url).strip(), str(key).strip()
 
 _CLIENT: Client | None = None
 _MISSING_TABLE_WARNED = set()
