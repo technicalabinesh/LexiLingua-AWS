@@ -92,6 +92,13 @@ _CURRENT_GROQ_KEY = None
 _CURRENT_OPENAI_KEY = None
 
 def get_groq_api_key() -> str:
+    try:
+        import streamlit as st
+        if "custom_groq_key" in st.session_state and st.session_state.custom_groq_key:
+            return str(st.session_state.custom_groq_key).strip()
+    except Exception:
+        pass
+
     key = os.getenv("GROQ_API_KEY", "").strip()
     if not key:
         try:
@@ -102,6 +109,13 @@ def get_groq_api_key() -> str:
     return key
 
 def get_openai_api_key() -> str:
+    try:
+        import streamlit as st
+        if "custom_openai_key" in st.session_state and st.session_state.custom_openai_key:
+            return str(st.session_state.custom_openai_key).strip()
+    except Exception:
+        pass
+
     key = os.getenv("OPENAI_API_KEY", "").strip()
     if not key:
         try:
@@ -186,7 +200,17 @@ def stream_chat_completion(messages: List[Dict[str, str]], model: str = "openai/
                 if delta and delta.content:
                     yield delta.content
     except Exception as exc:
-        yield f"⚠️ **AI Execution Error ({model}):** `{exc}`"
+        err_str = str(exc)
+        if "401" in err_str or "invalid_api_key" in err_str.lower():
+            yield (
+                "⚠️ **Invalid or Expired Groq API Key (Error 401)**\n\n"
+                "The current API key was rejected or revoked by Groq.\n\n"
+                "👉 **To fix:**\n"
+                "1. Go to [Groq Console Keys](https://console.groq.com/keys) and generate a new key (`gsk_...`).\n"
+                "2. Paste it in the **Groq API Key** input in the settings panel on the right (or update your Streamlit Secrets)."
+            )
+        else:
+            yield f"⚠️ **AI Execution Error ({model}):** `{err_str}`"
 
 def summarize_text_ai(text: str, length: str = "Medium", model: str = "openai/gpt-oss-120b") -> Dict[str, Any]:
     """

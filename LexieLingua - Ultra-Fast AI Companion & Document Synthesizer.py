@@ -649,8 +649,9 @@ if st.session_state.page == "chat":
             save_chat_message(st.session_state.session_id, "user", user_input)
 
             # Stream directly as clean floating editorial text
+            active_model = st.session_state.get("selected_ai_model", "openai/gpt-oss-120b")
             with st.container():
-                stream_gen = stream_answer(user_input, st.session_state.chat_history)
+                stream_gen = stream_answer(user_input, st.session_state.chat_history, model=active_model)
                 full_ai_response = st.write_stream(stream_gen)
 
             st.session_state.chat_history.append({"role": "user", "content": user_input})
@@ -666,6 +667,51 @@ if st.session_state.page == "chat":
                 st.rerun()
 
     with right_col:
+        # Settings Card: Model Selection & API Key Configuration
+        st.markdown(
+            '<div style="background:rgba(15,23,42,0.75); backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,0.16); border-radius:24px; padding:20px; margin-bottom:16px;">'
+            '<div style="font-size:0.8rem; font-weight:800; color:#38BDF8; text-transform:uppercase; margin-bottom:4px;">Engine Configuration</div>'
+            '<h4 style="margin:0 0 12px; font-weight:800; font-size:1.05rem; color:#FFFFFF; font-family:\'Space Grotesk\', sans-serif;">🤖 AI Model & Key</h4>',
+            unsafe_allow_html=True,
+        )
+
+        model_options = [
+            ("openai/gpt-oss-120b", "🥇 openai/gpt-oss-120b (Deep Reasoning)"),
+            ("openai/gpt-oss-20b", "🥈 openai/gpt-oss-20b (Ultra-Fast)"),
+            ("qwen/qwen3.8-27b", "🥉 qwen/qwen3.8-27b (Preview)"),
+            ("allam-2-7b", "🌍 allam-2-7b (Multilingual)"),
+            ("canopylabs/orpheus-v1-english", "🔤 canopylabs/orpheus-v1-english"),
+            ("canopylabs/orpheus-arabic-saudi", "🇸🇦 canopylabs/orpheus-arabic-saudi"),
+            ("openai/gpt-oss-safeguard-20b", "🛡️ openai/gpt-oss-safeguard-20b"),
+            ("gpt-4o", "⚡ OpenAI gpt-4o"),
+            ("gpt-4o-mini", "🚀 OpenAI gpt-4o-mini"),
+        ]
+
+        st.selectbox(
+            "Select AI Model",
+            options=[m[0] for m in model_options],
+            format_func=lambda x: dict(model_options).get(x, x),
+            index=0,
+            key="selected_ai_model",
+            label_visibility="collapsed",
+        )
+
+        with st.expander("🔑 Update API Key", expanded=False):
+            custom_key = st.text_input(
+                "Groq API Key",
+                type="password",
+                value=st.session_state.get("custom_groq_key", ""),
+                placeholder="gsk_...",
+                help="Paste a new key from https://console.groq.com/keys",
+                key="key_input_field",
+            )
+            if custom_key and custom_key != st.session_state.get("custom_groq_key"):
+                st.session_state.custom_groq_key = custom_key
+                st.toast("✅ Groq API Key updated!", icon="🔑")
+                st.rerun()
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
         st.markdown(
             '<div style="background:rgba(15,23,42,0.75); backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,0.16); border-radius:24px; padding:22px; margin-bottom:16px;">'
             '<div style="font-size:0.8rem; font-weight:800; color:#38BDF8; text-transform:uppercase; margin-bottom:4px;">Quick Actions</div>'
