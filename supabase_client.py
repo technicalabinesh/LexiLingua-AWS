@@ -198,7 +198,7 @@ def save_transcription_to_db(trans_data: dict) -> bool:
         client.table("audio_transcriptions").insert({
             "filename": trans_data.get("filename", "audio.mp3"),
             "transcription": trans_data.get("transcription", ""),
-            "model": trans_data.get("model", "whisper-large-v3"),
+            "model": trans_data.get("model", "Speech Recognition"),
             "duration_seconds": trans_data.get("duration_seconds", 0.0),
         }).execute()
         return True

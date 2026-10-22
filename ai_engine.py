@@ -275,47 +275,11 @@ DOCUMENT:
         "summary_words": word_count(s),
     }
 
-def transcribe_audio_ai(file_bytes: bytes, filename: str = "audio.wav", model: str = "whisper-large-v3") -> Dict[str, Any]:
+def transcribe_audio_ai(file_bytes: bytes, filename: str = "audio.wav", model: str = "Speech Recognition") -> Dict[str, Any]:
     """
-    Transcribes audio using Groq Whisper model (whisper-large-v3 / whisper-large-v3-turbo).
+    Transcribes audio using Speech Recognition engine (no Groq/Whisper API key required).
     """
-    client = get_groq_client()
-    if not client:
-        return {
-            "success": False,
-            "error": "GROQ_API_KEY is missing in environment variables.",
-            "transcription": "",
-        }
+    from transcriber import transcribe_audio
+    return transcribe_audio(file_bytes=file_bytes, filename=filename, model=model)
 
-    if not file_bytes or len(file_bytes) == 0:
-        return {
-            "success": False,
-            "error": "Audio data stream was empty or disconnected.",
-            "transcription": "",
-        }
-
-    try:
-        audio_buffer = io.BytesIO(file_bytes)
-        audio_buffer.name = filename if filename else "audio.wav"
-        
-        audio_file = (audio_buffer.name, audio_buffer)
-        transcription = client.audio.transcriptions.create(
-            file=audio_file,
-            model=model,
-            response_format="json",
-            temperature=0.0
-        )
-        text = transcription.text if hasattr(transcription, "text") else str(transcription)
-        return {
-            "success": True,
-            "transcription": text.strip(),
-            "filename": filename,
-            "model": model,
-        }
-    except Exception as exc:
-        return {
-            "success": False,
-            "error": str(exc),
-            "transcription": "",
-        }
 

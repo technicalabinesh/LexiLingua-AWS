@@ -555,14 +555,14 @@ if st.session_state.page == "chat":
 
     with left_col:
         # Voice & Live Mic Audio Question Feature
-        whisper_active = is_whisper_available()
-        status_badge = "⚡ Groq Whisper Large V3" if whisper_active else "⚠️ GROQ_API_KEY Missing"
+        speech_active = is_whisper_available()
+        status_badge = "⚡ Speech Recognition (Ready)" if speech_active else "⚠️ Speech Recognition Missing"
         
         with st.expander(f"🎙️ Ask Question via Voice / Audio ({status_badge})", expanded=False):
             st.markdown(
                 "<p style='font-size:0.88rem; color:#94A3B8; margin-bottom:12px;'>"
                 "Speak directly into your microphone or upload an audio recording. "
-                "LexieLingua will transcribe your voice using Groq Whisper AI and answer your question immediately."
+                "LexieLingua will transcribe your voice using Speech Recognition and answer your question immediately."
                 "</p>",
                 unsafe_allow_html=True,
             )
@@ -596,8 +596,8 @@ if st.session_state.page == "chat":
                 import hashlib
                 audio_md5 = hashlib.md5(chosen_audio_bytes).hexdigest()
                 if st.session_state.get("last_processed_audio_hash") != audio_md5:
-                    with st.spinner("🎙️ Transcribing voice question using Groq Whisper AI..."):
-                        t_res = transcribe_audio(chosen_audio_bytes, filename=chosen_filename, model="whisper-large-v3-turbo")
+                    with st.spinner("🎙️ Transcribing voice question using Speech Recognition..."):
+                        t_res = transcribe_audio(chosen_audio_bytes, filename=chosen_filename)
                         if t_res.get("success") and t_res.get("transcription"):
                             st.session_state.last_processed_audio_hash = audio_md5
                             st.session_state.pending_prompt = t_res["transcription"]
@@ -936,13 +936,13 @@ else:
             '<div class="arch-title">⚡ 3. Multi-Provider AI Engine</div>'
             '<p class="arch-desc">'
             '• <b>Groq LPU Engine:</b> Ultra-fast inference with <code>openai/gpt-oss-120b</code>, <code>gpt-oss-20b</code>, <code>qwen/qwen3.8-27b</code>, and <code>allam-2-7b</code>.<br>'
-            '• <b>Voice Question Answering:</b> Real-time Speech-to-Text transcription powered by Groq Whisper (<code>whisper-large-v3-turbo</code> & <code>whisper-large-v3</code>).<br>'
+            '• <b>Voice Question Answering:</b> Real-time Speech-to-Text transcription powered by Speech Recognition (<code>speech_recognition</code>).<br>'
             '• <b>OpenAI API Engine:</b> Multi-model access supporting <code>gpt-4o</code> and <code>gpt-4o-mini</code>.<br>'
             '• <b>Offline Heuristics:</b> Extractive sentence graph scoring using TF-IDF for zero-API downtime.'
             '</p>'
             '<div style="margin-top:auto; padding-top:12px;">'
             '<span class="tech-chip">Groq LPU</span>'
-            '<span class="tech-chip">Whisper Large V3 Turbo</span>'
+            '<span class="tech-chip">Speech Recognition</span>'
             '<span class="tech-chip">Live Mic Recorder</span>'
             '<span class="tech-chip">OpenAI API</span>'
             '<span class="tech-chip">Offline TF-IDF</span>'
